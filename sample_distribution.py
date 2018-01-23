@@ -7,6 +7,8 @@ import numpy as np
 from scipy.optimize import minimize
 import random
 from scipy.integrate import quad
+from numpy.polynomial.chebyshev import  chebfit, chebval
+from numpy.polynomial.legendre import  legfit, legval
 
 class arbitrary_distribution:
 	
@@ -22,7 +24,22 @@ class arbitrary_distribution:
 		self.a = a
 		self.b = b
 		self.Norm = quad(self.func, a, b)[0]
+	
+	#--------------------------------------------------------------
+	# We define the basis functions \phi_k(x)
+	#--------------------------------------------------------------
+	def basis_func(self,basis,k,x):
+		c = np.zeros(k+1)
+		c[k]=1
 		
+		if(basis=="polynomial"):
+			return x**k
+		elif(basis=='legendre'):
+			return legval(x,c)
+		elif(basis=='chebychev'):
+			return chebval(x,c)
+
+	
 	#--------------------------------------------------------------
 	# This function defines the cummulative distribution of a function
 	# Int[F(y),{y,-Infinity,x}]
@@ -57,25 +74,23 @@ class arbitrary_distribution:
 	#-------------------------------------------------------------------
 	# Compute the moment of the target PDF distribution
 	#-------------------------------------------------------------------
-	def eval_PDF_moment(self,k):
+	def eval_PDF_moment(self,basis,k):
 		
 		def kernel(x):
-			return self.eval_func(x)*(x**k)
+			return self.eval_func(x)*self.basis_func(basis,k,x)
 		
 		s = quad(kernel, self.a, self.b)[0]
 		
 		return s
 	
+    #-------------------------------------------------------------------
 	# Compute the moment of a sample
-	def eval_sample_moment(self,v,k):
-		'''
-		Arguments:
-		k = the order of the moment
-		v = the vector containing the sample values
-		'''
-		
+    #-------------------------------------------------------------------
+	def eval_sample_moment(self,v,basis,k):
+		a = np.asarray([self.basis_func(basis,k,v[i]) for i in range(0,len(v))])
+		s = a.mean()
 		return s
-	
+
 	#-------------------------------------------------------------------
 	# This function generates a single sample with target distribution.
 	# The method employed here is known as the: 

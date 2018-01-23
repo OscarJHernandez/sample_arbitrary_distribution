@@ -12,12 +12,13 @@ b0 = 1.0
 dist1 = sd.arbitrary_distribution(func,a0,b0)
 
 x = np.arange(a0,b0,0.01)
-a = dist1.draw_samples(80000)
+a = dist1.draw_samples(8000)
 
-for k in range(1,50):
-	print 'm('+str(k)+')', np.mean(a**k), dist1.eval_moment(k)
+for k in range(1,20):
+	basis = "chebychev"
+	print 'm('+str(k)+')', dist1.eval_sample_moment(a,basis,k), dist1.eval_PDF_moment(basis,k)
 
-exit()
+
 plt.hist(a, bins='auto',normed=True,alpha=0.6)  # arguments are passed to np.histogram
 plt.plot(x,dist1.eval_func(x),'-', linewidth=2)
 plt.title("Histogram with 'auto' bins")
